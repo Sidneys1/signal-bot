@@ -1,0 +1,4 @@
+*.pyc
+.signal-account
+signal_bot/dist
+signal_bot.egg-info

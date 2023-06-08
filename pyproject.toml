@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "signal_bot"
+version = "0.1.0"
+authors = [
+  { name="Sidneys1", email="sidneys1@proton.me" },
+]
+description = "A Python module for building Signal.org bots that interact with signal-cli."
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+  "cron-converter~=1.0.2",
+  "humanize~=4.6.0"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/Sidneys1/signal-bot"
+"Bug Tracker" = "https://github.com/Sidneys1/signal-bot/issues"

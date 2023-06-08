@@ -1,0 +1,4 @@
+services:
+  signal_bot:
+    image: "sidneys1/signal_bot:latest"
+    build: .
