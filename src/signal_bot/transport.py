@@ -1,5 +1,7 @@
+"""Used to communicated with signal-cli."""
+
 import json
-from typing import Self, cast
+from typing import Self, Protocol, Dict, Type, Iterable, cast
 from asyncio import subprocess, CancelledError, open_connection, StreamReader, StreamWriter
 from urllib.parse import ParseResult, unquote, urlunparse
 from subprocess import PIPE
@@ -9,6 +11,37 @@ from .constants import SIGNAL_ARGS, JSON_PROPS
 from .protocol import JsonRpcTransport, JsonRpcHandler
 from .types import NotificationFrame, ResponseFrame
 from ._util import readline
+
+
+class JsonRpcHandler(Protocol):
+    """Notified by `JsonRpcTransport` of incoming JSON RPC responses and notifications."""
+
+    async def handle_notification(self, notification: NotificationFrame) -> None:
+        """Recevied a JSON-RPC notification (a message that is not a response to a request)."""
+    async def handle_response(self, response: ResponseFrame) -> None:
+        """Received a JSON-RPC response (the result of a request)."""
+
+
+class JsonRpcTransport(Protocol):
+    """Allows for communication with signal-cli."""
+    
+    PROTOS: Dict[str, Type[Self]] = {}
+
+    @classmethod
+    async def create(self, connection: ParseResult) -> None: ...
+
+    def __init_subclass__(cls, /, scheme: str|Iterable[str], *args, **kwargs) -> None:
+        if isinstance(scheme, str):
+            JsonRpcTransport.PROTOS[scheme] = cls
+        else:
+            JsonRpcTransport.PROTOS.update({x: cls for x in scheme})
+        return super().__init_subclass__(*args, **kwargs)
+
+    async def write(self, data: NotificationFrame, handler: JsonRpcHandler) -> None: ...
+    async def listen(self, handler: JsonRpcHandler) -> None: ...
+
+    async def terminate(self) -> None: ...
+
 
 
 class TcpTransport(JsonRpcTransport, scheme='tcp'):

@@ -10,10 +10,12 @@ from .types import *
 from .exceptions import *
 from .personality import Personality
 from .protocol import *
-from .transport import JsonRpcTransport
+from .transport import JsonRpcTransport, JsonRpcHandler
 
 
-class SignalImpl(Signal, Personality):
+class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
+    """Concrete implementation of `SignalBot`."""
+
     __account: Account
     __transport: JsonRpcTransport
     __log: Logger = getLogger(__module__ + '.Signal')  # type: ignore
@@ -57,8 +59,11 @@ class SignalImpl(Signal, Personality):
             for cancelable in self.__cancelable:
                 cancelable.cancel()
             await asyncio.wait([x for x in self.__cancelable if isawaitable(x)])
+        self.__stopping.clear()
 
-    # `SignalRpc`
+    #######################
+    # `SignalRpc` Methods #
+    #######################
 
     async def send_reaction(self, to: DataMessage, emoji: str) -> Future[Response]:
         kwargs = {}
@@ -93,17 +98,15 @@ class SignalImpl(Signal, Personality):
         kwargs: dict = {('groupId' if len(to) == 44 else 'recipient'): to, 'targetTimestamp': int(target_timestamp.timestamp() * 1000)}
         return asyncio.ensure_future(Response.from_future_frame(await self.__json_rpc('remoteDelete', **kwargs)))
     
-    # `RootPersonality`
-
     def add_personality(self, personality: PersonalityProto) -> None:
         assert isinstance(personality, Personality)
         self.__personalities.append(personality)
 
     def handle_callback_exception(self, exception: BaseException, callback: AnyCb) -> bool:
         """
-        Called when a exception occurs in a callback.
-        Since this is the top-level Signal instance, we'll always return True
-        (reschedule Crons if applicable).
+        Handle when a exception occurs in a callback.
+
+        Since this is the top-level Signal instance, we'll always return True (reschedule Crons if applicable).
         """
         callback_type, *info = callback
         post = "" if callback_type != 'cron' else " Cron will be rescheduled for the next occurance."
@@ -111,7 +114,9 @@ class SignalImpl(Signal, Personality):
                                callback_type, info, post, exc_info=exception, stack_info=True)
         return True
 
-    # `JsonRpcHandler`
+    ############################
+    # `JsonRpcHandler` Methods #
+    ############################
 
     async def handle_response(self, response: ResponseFrame) -> None:
         remove = next((id for id, checker in self.__WAITERS.items() if checker(response)), None)
@@ -126,7 +131,9 @@ class SignalImpl(Signal, Personality):
                 self.__log.warning('Received unexpected JsonRPC notification method: %r',
                                    notification['method'])
 
-    # Internals
+    #############
+    # Internals #
+    #############
 
     async def __receive(self, message: NotificationFrame) -> None:
         # TODO: logging

@@ -1,12 +1,20 @@
+"""Signal message arguments."""
+
 from dataclasses import dataclass
-from pathlib import Path
 from abc import ABC
 
 from ._util import to_lower_camel_case
 
 class JsonRpcArgs(ABC):
+    """Base class for extended JSON-RPC arguments. Automatically converts to a dict of lowerCamelCase keys to values."""
+
     def to_args(self):
-        return {to_lower_camel_case(x): getattr(self, x) for x in dir(self) if x[0] != '_' and getattr(self, x) is not None and not callable(getattr(self, x))}
+        """Convert class properties to a dict of lowerCamelCase keys to values."""
+        return {to_lower_camel_case(x): getattr(self, x)
+                for x in dir(self)
+                if x[0] != '_' and 
+                   getattr(self, x) is not None 
+                   and not callable(getattr(self, x))}
 
 # @dataclass
 # class QuoteMessageArgs(JsonRpcArgs):
@@ -18,6 +26,8 @@ class JsonRpcArgs(ABC):
 
 @dataclass
 class SendMessageArgs(JsonRpcArgs):
+    """Additional arguments to `send_message`."""
+    
     # note_to_self: bool = False
     # attachment: list[str|Path] = None
     # sticker: str|None = None

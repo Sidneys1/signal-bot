@@ -47,7 +47,7 @@ class Personality(PersonalityProto, ABC):
         """
         raise NotImplementedError()
 
-    def _cron_repeat(self, signal: 'Signal', schedule: Seeker, item: CronItem):
+    def _cron_repeat(self, signal: 'SignalBot', schedule: Seeker, item: CronItem):
         def _reschedule(task: asyncio.Task[None]):
             if (ex := task.exception()) is not None and not self.handle_callback_exception(ex, ('cron', *item)):
                 return
@@ -66,7 +66,7 @@ class Personality(PersonalityProto, ABC):
             self._crons.append(loop.call_later(delay, self._cron_repeat, signal, schedule, item))
         asyncio.ensure_future(item[1](signal)).add_done_callback(_reschedule)
 
-    def start_crons(self, signal: 'Signal'):
+    def start_crons(self, signal: 'SignalBot'):
         self._logger.debug("Starting crons...")
         loop = asyncio.get_running_loop()
         ref = datetime.now()
@@ -85,7 +85,7 @@ class Personality(PersonalityProto, ABC):
         for cron in self._crons:
             cron.cancel()
 
-    async def _personality_handle_message(self, signal: 'Signal', context: Context, message: DataMessage) -> bool:
+    async def _personality_handle_message(self, signal: 'SignalBot', context: Context, message: DataMessage) -> bool:
         # First, prefixes
         if message.message is not None:
             for prefix, hook in self._prefix_hooks.items():
@@ -94,7 +94,7 @@ class Personality(PersonalityProto, ABC):
 
         # Then mentions
         for account, hook in self._mention_hooks.items():
-            if message.sender == account and await hook(signal, context, message):
+            if message.mentions == account and await hook(signal, context, message):
                 return True
 
         # Then keywords

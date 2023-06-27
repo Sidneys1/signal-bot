@@ -1,14 +1,4 @@
-FROM python:3.11-alpine as BUILD
-
-COPY . .
-
-RUN python -m pip install build \
- && python -m build
-
+# syntax=docker/dockerfile:experimental
 FROM python:3.11-alpine
-
-COPY --from=BUILD ./dist/*.whl /tmp/
-
-RUN python -m pip install --no-cache-dir /tmp/*.whl \
- && rm /tmp/*.whl
-
+RUN --mount=type=bind,target=/signal_bot,source=/,rw --mount=type=cache,target=/cache --mount=type=tmpfs,target=/temp \
+  TMPDIR=/temp python -m pip install --cache-dir=/cache /signal_bot
