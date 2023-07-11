@@ -101,6 +101,16 @@ class EnvelopeFrame(TypedDict):
     typingMessage: NotRequired[TypingMessage]
 
 
+class MentionFrame(TypedDict):
+    """An @mention in a DataMessage."""
+
+    name: str
+    number: str
+    uuid: str
+    start: int
+    length: int
+
+
 class DataMessage:
     """A realized DataMessage."""
 
@@ -118,7 +128,7 @@ class DataMessage:
     reaction: Any|None
     quote: Any|None
     payment: Any|None
-    mentions: list[Any]|None
+    mentions: list[MentionFrame]|None
     previews: list[Any]|None
     attachments: list[Any]|None
     sticker: Any|None
