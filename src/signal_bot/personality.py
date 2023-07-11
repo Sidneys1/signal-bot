@@ -94,7 +94,7 @@ class Personality(PersonalityProto, ABC):
 
         # Then mentions
         for account, hook in self._mention_hooks.items():
-            if any(mention['number'] == account for mention in message.mentions) and await hook(signal, context, message):
+            if message.mentions and any(mention['number'] == account for mention in message.mentions) and await hook(signal, context, message):
                 return True
 
         # Then keywords
