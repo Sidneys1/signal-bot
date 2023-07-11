@@ -1,7 +1,7 @@
 import asyncio
 
 
-async def readline(stream: asyncio.StreamReader, timeout: Optional[float] = None) -> bytes | None:
+async def readline(stream: asyncio.StreamReader, timeout: float|None = None) -> bytes | None:
     """Read a single line from a `StreamReader`, with a timeout."""
     try:
         return await asyncio.wait_for(stream.readline(), timeout=timeout)

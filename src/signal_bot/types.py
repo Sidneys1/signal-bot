@@ -113,20 +113,20 @@ class DataMessage:
     sender_name: str
     expires_in: timedelta
 
-    message: str|None = None
-    view_once: bool|None = None
-    reaction: Any|None = None
-    quote: Any|None = None
-    payment: Any|None = None
-    mentions: list[Any]|None = None
-    previews: list[Any]|None = None
-    attachments: list[Any]|None = None
-    sticker: Any|None = None
-    remote_delete: Any|None = None
-    contacts: list[Any]|None = None
-    text_styles: list[Any]|None = None
-    group_info: GroupInfoFrame|None = None
-    story_context: Any|None = None
+    message: str|None
+    view_once: bool|None
+    reaction: Any|None
+    quote: Any|None
+    payment: Any|None
+    mentions: list[Any]|None
+    previews: list[Any]|None
+    attachments: list[Any]|None
+    sticker: Any|None
+    remote_delete: Any|None
+    contacts: list[Any]|None
+    text_styles: list[Any]|None
+    group_info: GroupInfoFrame|None
+    story_context: Any|None
 
     def __init__(self, frame: EnvelopeFrame):
         """Create a `DataMessage` from an `EnvelopeFrame`."""

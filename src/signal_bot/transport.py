@@ -8,7 +8,6 @@ from subprocess import PIPE
 # import aiohttp
 
 from .constants import SIGNAL_ARGS, JSON_PROPS
-from .protocol import JsonRpcTransport, JsonRpcHandler
 from .types import NotificationFrame, ResponseFrame
 from ._util import readline
 
