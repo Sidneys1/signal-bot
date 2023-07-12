@@ -41,6 +41,7 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
         self.start_crons(self)
         for personality in self.__personalities:
             personality.start_crons(self)
+            asyncio.ensure_future(personality.started(self))
         try:
             await self.__transport.listen(self)
         except asyncio.CancelledError:
@@ -48,7 +49,7 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
             await self.stop()
 
     async def stop(self) -> None:
-        if self.__stopping.is_set(): 
+        if self.__stopping.is_set():
             return
         self.__stopping.set()
         self.stop_crons()
@@ -79,7 +80,7 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
             targetTimestamp=to.unix_timestamp,
             **kwargs
         )))
-    
+
     async def send_typing(self, to: Account|GroupId, stop=False) -> Future[Response]:
         kwargs: dict = {('groupId' if len(to) == 44 else 'recipient'): to}
         if stop:
@@ -97,7 +98,7 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
     async def delete_message(self, to: Account|GroupId, target_timestamp: datetime) -> RpcRet:
         kwargs: dict = {('groupId' if len(to) == 44 else 'recipient'): to, 'targetTimestamp': int(target_timestamp.timestamp() * 1000)}
         return asyncio.ensure_future(Response.from_future_frame(await self.__json_rpc('remoteDelete', **kwargs)))
-    
+
     def add_personality(self, personality: PersonalityProto) -> None:
         assert isinstance(personality, Personality)
         self.__personalities.append(personality)
@@ -148,7 +149,7 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
         if timestamp <= self.__start_time:
             # TODO: catchup mode?
             return
-        
+
         match envelope:
             case {'typingMessage': _}:
                 # TODO: self.__handle_typing_message(envelope)
@@ -159,11 +160,11 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
             case _:
                 # TODO: logging
                 pass
-    
+
     async def __handle_data_message(self, envelope: EnvelopeFrame) -> None:
         if envelope['dataMessage']['message'] is None:
             return
-        
+
         message = DataMessage(envelope)
         context: GroupContext|IndividualContext
         if message.group_info is not None:

@@ -60,14 +60,21 @@ class PersonalityProto(Protocol):
 
     def on_message(self, cb: MessageCb) -> None:
         """Register a callback to be called on any DataMessage."""
+
     def on_prefix(self, prefix: str, cb: MessageCb) -> None:
         """Register a callback to be called on any DataMessage matching a given prefix (exact match)."""
+
     def on_cron(self, schedule: str, cb: CronCb) -> CronItem:
         """Register a callback to be called on a Cron schedule."""
+
     def on_mention(self, mention: Account, cb: MessageCb) -> None:
         """Register a callback to be called when a given Account is @-mentioned."""
+
     def on_keyword(self, keyword: str, cb: MessageCb, case_sensitive = False, whole_word = True) -> None:
         """Register a callback to be called when DataMessage contains a keyword."""
+
+    async def started(self, signal: 'SignalBot') -> None:
+        """Handle when SignalBot is first started."""
 
     @abstractmethod
     def handle_callback_exception(self, exception: BaseException, cb: AnyCb) -> bool:
