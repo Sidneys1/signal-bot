@@ -1,6 +1,6 @@
 """Common types for signal_bot."""
 
-from __future__ import annotations  
+from __future__ import annotations
 
 from asyncio import Future
 from typing import Literal, TypedDict, NotRequired, Required, Any, NewType
@@ -43,7 +43,7 @@ class Response:
 
     __slots__ = ['result']
     result: Any
-    
+
     def __init__(self, frame: ResponseFrame):
         """Create a `Response` from a `ResponseFrame`."""
         self.result = frame.get('result', None)
@@ -114,13 +114,14 @@ class MentionFrame(TypedDict):
 class DataMessage:
     """A realized DataMessage."""
 
-    __slots__ = ("timestamp", "unix_timestamp", "sender", "sender_name", "expires_in", "message", "view_once",
-                 "reaction", "quote", "payment", "mentions", "previews", "attachments", "sticker", "remote_delete",
-                 "contacts", "text_styles", "group_info", "story_context")
+    __slots__ = ("timestamp", "unix_timestamp", "sender", "sender_name", "sender_uuid", "expires_in", "message",
+                 "view_once", "reaction", "quote", "payment", "mentions", "previews", "attachments", "sticker",
+                 "remote_delete", "contacts", "text_styles", "group_info", "story_context")
     timestamp: datetime
     unix_timestamp: int
     sender: Account
     sender_name: str
+    sender_uuid: str
     expires_in: timedelta
 
     message: str|None
@@ -145,6 +146,7 @@ class DataMessage:
         self.unix_timestamp = frame['dataMessage']['timestamp']
         self.sender = Account(frame['sourceNumber'])
         self.sender_name = frame['sourceName']
+        self.sender_uuid = frame['sourceUuid']
         self.expires_in = timedelta(seconds=frame['dataMessage']['expiresInSeconds'])
         for name in self.__annotations__:
             if name.startswith('_') or getattr(self, name, None) is not None or name in ('timestamp', 'unix_timestamp', 'sender', 'sender_name', 'expires_in'):
