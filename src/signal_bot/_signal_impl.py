@@ -51,15 +51,21 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
     async def stop(self) -> None:
         if self.__stopping.is_set():
             return
+        self.__log.info("Stop requested...")
+        self.__log.debug("Stopping Crons...")
         self.__stopping.set()
         self.stop_crons()
         for personality in self.__personalities:
             personality.stop_crons()
+        self.__log.debug("Disconnecting from signal-cli...")
         await self.__transport.terminate()
+        self.__log.debug("Canceling anything in-flight...")
         if self.__cancelable:
             for cancelable in self.__cancelable:
                 cancelable.cancel()
+            self.__log.debug("Waiting for cancelables to finish...")
             await asyncio.wait([x for x in self.__cancelable if isawaitable(x)])
+        self.__log.info("Stopped.")
         self.__stopping.clear()
 
     #######################
@@ -202,7 +208,6 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
         t_handle = loop.call_later(5.0, cancel_timer)
         self.__cancelable.append(t_handle)
         def check_return(ret: ResponseFrame) -> bool:
-            print('id', request_id)
             if ret['id'] != request_id:
                 return False
             match ret:
