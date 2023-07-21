@@ -94,7 +94,7 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
         return asyncio.ensure_future(Response.from_future_frame(await self.__json_rpc('sendTyping', **kwargs)))
 
     async def send_message(self, to: Account|GroupId, message: str|None = None, args: SendMessageArgs|None = None) -> Future[Response]:
-        if not message:
+        if (not message) and args is not None and not args.attachment:
             raise ValueError('message cannot be empty without attachment')
         kwargs: dict = {('groupId' if len(to) == 44 else 'recipient'): to}
         if args is not None:

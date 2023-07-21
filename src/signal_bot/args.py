@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from abc import ABC
 from typing import Any
+from pathlib import Path
 
 from ._util import to_lower_camel_case
 from .types import DataMessage
@@ -24,6 +25,11 @@ class JsonRpcArgs(ABC):
                 to_lower_camel_case(f"{name}_{k}"): v
                 for k, v in nested.to_args().items()
             })
+
+        for key in list(ret):
+            value = ret[key]
+            if isinstance(value, Path):
+                ret[key] = str(value.absolute())
         return ret
 
 @dataclass
@@ -53,7 +59,7 @@ class SendMessageArgs(JsonRpcArgs):
     """Additional arguments to `send_message`."""
 
     # note_to_self: bool = False
-    # attachment: list[str|Path] = None
+    attachment: list[str|Path] = None
     # sticker: str|None = None
     mention: list[str]|None = None
     text_style: list[str]|None = None
