@@ -2,3 +2,5 @@
 .signal-account
 signal_bot/dist
 signal_bot.egg-info
+docs/_*
+build/

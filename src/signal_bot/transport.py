@@ -1,11 +1,12 @@
-"""Used to communicated with signal-cli."""
+"""Handles communication with ``signal-cli``."""
 
 import json
 from typing import Self, Protocol, Dict, Type, Iterable, cast
-from asyncio import subprocess, CancelledError, open_connection, StreamReader, StreamWriter
-from urllib.parse import ParseResult, unquote, urlunparse
+from abc import abstractmethod
+import asyncio.subprocess
+from asyncio import CancelledError, open_connection, StreamReader, StreamWriter
+from urllib.parse import ParseResult, unquote
 from subprocess import PIPE
-# import aiohttp
 
 from .constants import SIGNAL_ARGS, JSON_PROPS
 from .types import NotificationFrame, ResponseFrame
@@ -13,37 +14,73 @@ from ._util import readline
 
 
 class JsonRpcHandler(Protocol):
-    """Notified by `JsonRpcTransport` of incoming JSON RPC responses and notifications."""
+    """
+    Notified by `JsonRpcTransport` of incoming JSON RPC responses and notifications.
+
+    This abstract Protocol is implemented by :class:`~signal_bot.protocol.SignalBot`.
+    """
 
     async def handle_notification(self, notification: NotificationFrame) -> None:
-        """Recevied a JSON-RPC notification (a message that is not a response to a request)."""
+        """
+        Handle a JSON-RPC notification (a message that is not a response to a request).
+
+        :param notification: The notification that was received.
+        """
+
     async def handle_response(self, response: ResponseFrame) -> None:
-        """Received a JSON-RPC response (the result of a request)."""
+        """
+        Handle a JSON-RPC response (the result of a request).
+
+        :param response: The response that was received.
+        """
 
 
 class JsonRpcTransport(Protocol):
     """Allows for communication with signal-cli."""
-    
+
     PROTOS: Dict[str, Type[Self]] = {}
 
     @classmethod
-    async def create(self, connection: ParseResult) -> None: ...
+    @abstractmethod
+    async def create(cls, connection: ParseResult) -> Self:
+        """
+        Create an instance of this transport.
 
-    def __init_subclass__(cls, /, scheme: str|Iterable[str], *args, **kwargs) -> None:
+        :param connection: ``urllib`` parsed connections string.
+        """
+
+    def __init_subclass__(cls, /, scheme: str | Iterable[str], *args, **kwargs) -> None:
         if isinstance(scheme, str):
-            JsonRpcTransport.PROTOS[scheme] = cls
+            JsonRpcTransport.PROTOS[scheme] = cls  # type: ignore
         else:
-            JsonRpcTransport.PROTOS.update({x: cls for x in scheme})
+            JsonRpcTransport.PROTOS.update({x: cls for x in scheme})  # type: ignore
         return super().__init_subclass__(*args, **kwargs)
 
-    async def write(self, data: NotificationFrame, handler: JsonRpcHandler) -> None: ...
-    async def listen(self, handler: JsonRpcHandler) -> None: ...
+    @abstractmethod
+    async def write(self, data: NotificationFrame) -> None:
+        """
+        Write a notification to ``signal-cli``.
 
-    async def terminate(self) -> None: ...
+        :param data: The notification to send.
+        """
 
+    @abstractmethod
+    async def listen(self, handler: JsonRpcHandler) -> None:
+        """
+        Listen for notifications and responses from ``signal-cli``.
+
+        :param handler: The class that will handle any received notifications or responses.
+        """
+
+    async def terminate(self) -> None:
+        """
+        Terminate the connection to ``signal-cli`` (if necessary).
+        """
 
 
 class TcpTransport(JsonRpcTransport, scheme='tcp'):
+    """:class:`JsonRpcTransport` for the ``tcp://`` scheme."""
+
     __reader: StreamReader
     __writer: StreamWriter
 
@@ -54,7 +91,7 @@ class TcpTransport(JsonRpcTransport, scheme='tcp'):
     def __init__(self, connection: tuple[StreamReader, StreamWriter]) -> None:
         self.__reader, self.__writer = connection
 
-    async def write(self, data: NotificationFrame, _: JsonRpcHandler) -> None:
+    async def write(self, data: NotificationFrame) -> None:
         self.__writer.write(json.dumps(data, **JSON_PROPS).encode('utf-8') + b'\n')  # type: ignore
         await self.__writer.drain()
 
@@ -88,13 +125,17 @@ class TcpTransport(JsonRpcTransport, scheme='tcp'):
 #         async with self.__session.post('', json.dumps(data, **JSON_PROPS).encode('utf-8')) as response:
 #             await handler.handle_response(cast(ResponseFrame, json.loads(response.text())))
 
-    # async def listen(self, data: )
+# async def listen(self, data: )
+
 
 class SubprocessTransport(JsonRpcTransport, scheme='ipc'):
-    __signal_cli: subprocess.Process
+    """:class:`JsonRpcTransport` for the ``ipc://`` (interprocess communication) scheme."""
+
+    __signal_cli: asyncio.subprocess.Process  # pylint: disable=no-member
 
     @classmethod
     async def create(cls, connection: ParseResult) -> Self:
+        path: str | None
         if connection.path:
             path = unquote(connection.path)
         else:
@@ -102,14 +143,20 @@ class SubprocessTransport(JsonRpcTransport, scheme='ipc'):
             path = which('signal-cli')
             if path is None:
                 raise RuntimeError('could not find `signal-cli` on PATH')
-        
-        process = await subprocess.create_subprocess_exec(path, 'jsonRpc', *SIGNAL_ARGS, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+
+        # pylint: disable=no-member
+        process = await asyncio.subprocess.create_subprocess_exec(path,
+                                                                  'jsonRpc',
+                                                                  *SIGNAL_ARGS,
+                                                                  stdin=PIPE,
+                                                                  stdout=PIPE,
+                                                                  stderr=PIPE)
         return cls(process)
 
-    def __init__(self, signal_cli: subprocess.Process) -> None:
+    def __init__(self, signal_cli: asyncio.subprocess.Process) -> None:  # pylint: disable=no-member
         self.__signal_cli = signal_cli
 
-    async def write(self, data: NotificationFrame, _: JsonRpcHandler) -> None:
+    async def write(self, data: NotificationFrame) -> None:
         stdin = self.__signal_cli.stdin
         assert stdin is not None
         stdin.write(json.dumps(data, **JSON_PROPS).encode('utf-8') + b'\n')  # type: ignore

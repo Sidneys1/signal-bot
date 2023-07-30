@@ -1,3 +1,5 @@
+"""Signal-Bot implementation."""
+
 import asyncio
 from asyncio import Future
 from uuid import uuid4
@@ -6,10 +8,12 @@ from datetime import datetime
 from inspect import isawaitable
 from typing import Dict, Hashable, Callable, cast
 
-from .types import *
-from .exceptions import *
+from .types import Account, DataMessage, Response, GroupId, ResponseFrame, NotificationFrame, EnvelopeFrame
+from .aliases import GroupContext, AnyCb, IndividualContext
+from .args import SendMessageArgs
+from .exceptions import SignalRpcException
 from .personality import Personality
-from .protocol import *
+from .protocol import SignalBot, PersonalityProto, RpcRet
 from .transport import JsonRpcTransport, JsonRpcHandler
 
 
@@ -35,7 +39,8 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
     # `Signal`
 
     @property
-    def account(self) -> Account: return self.__account
+    def account(self) -> Account:
+        return self.__account
 
     async def run(self) -> None:
         self.start_crons(self)
@@ -77,48 +82,53 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
         if to.group_info is None:
             kwargs['recipient'] = to.sender
         else:
-            kwargs['groupId'] = to.group_info['groupId']
+            kwargs['groupId'] = to.group_info['groupId']  # type: ignore
 
-        return asyncio.ensure_future(Response.from_future_frame(await self.__json_rpc(
-            'sendReaction',
-            emoji=emoji,
-            targetAuthor=to.sender,
-            targetTimestamp=to.unix_timestamp,
-            **kwargs
-        )))
+        return asyncio.ensure_future(
+            Response.from_future_frame(await self.__json_rpc('sendReaction',
+                                                             emoji=emoji,
+                                                             targetAuthor=to.sender,
+                                                             targetTimestamp=to.unix_timestamp,
+                                                             **kwargs)))
 
-    async def send_typing(self, to: Account|GroupId, stop=False) -> Future[Response]:
+    async def send_typing(self, to: Account | GroupId, stop=False) -> Future[Response]:
         kwargs: dict = {('groupId' if len(to) == 44 else 'recipient'): to}
         if stop:
             kwargs['stop'] = True
         return asyncio.ensure_future(Response.from_future_frame(await self.__json_rpc('sendTyping', **kwargs)))
 
-    async def send_message(self, to: Account|GroupId, message: str|None = None, args: SendMessageArgs|None = None) -> Future[Response]:
+    async def send_message(self,
+                           to: Account | GroupId,
+                           message: str | None = None,
+                           args: SendMessageArgs | None = None) -> Future[Response]:
         if (not message) and args is not None and not args.attachment:
             raise ValueError('message cannot be empty without attachment')
         kwargs: dict = {('groupId' if len(to) == 44 else 'recipient'): to}
         if args is not None:
             kwargs.update(args.to_args())
-        return asyncio.ensure_future(Response.from_future_frame(await self.__json_rpc('send', message=message, **kwargs)))
+        return asyncio.ensure_future(
+            Response.from_future_frame(await self.__json_rpc('send', message=message, **kwargs)))
 
-    async def delete_message(self, to: Account|GroupId, target_timestamp: datetime) -> RpcRet:
-        kwargs: dict = {('groupId' if len(to) == 44 else 'recipient'): to, 'targetTimestamp': int(target_timestamp.timestamp() * 1000)}
+    async def delete_message(self, to: Account | GroupId, target_timestamp: datetime) -> RpcRet:
+        kwargs: dict = {
+            ('groupId' if len(to) == 44 else 'recipient'): to,
+            'targetTimestamp': int(target_timestamp.timestamp() * 1000)
+        }
         return asyncio.ensure_future(Response.from_future_frame(await self.__json_rpc('remoteDelete', **kwargs)))
 
     def add_personality(self, personality: PersonalityProto) -> None:
         assert isinstance(personality, Personality)
         self.__personalities.append(personality)
 
-    def handle_callback_exception(self, exception: BaseException, callback: AnyCb) -> bool:
-        """
-        Handle when a exception occurs in a callback.
-
-        Since this is the top-level Signal instance, we'll always return True (reschedule Crons if applicable).
-        """
-        callback_type, *info = callback
+    def handle_callback_exception(self, exception: BaseException, cb: AnyCb) -> bool:
+        callback_type, *info = cb
         post = "" if callback_type != 'cron' else " Cron will be rescheduled for the next occurance."
         self.__log.exception("Uncaught exception while processing a registered %r callback (addt'l info: %r).%s",
-                               callback_type, info, post, exc_info=exception, stack_info=True)
+                             callback_type,
+                             info,
+                             post,
+                             exc_info=exception,
+                             stack_info=True)
         return True
 
     ############################
@@ -135,8 +145,7 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
             case 'receive':
                 await self.__receive(notification)
             case _:
-                self.__log.warning('Received unexpected JsonRPC notification method: %r',
-                                   notification['method'])
+                self.__log.warning('Received unexpected JsonRPC notification method: %r', notification['method'])
 
     #############
     # Internals #
@@ -149,7 +158,7 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
             # TODO: logging
             return
 
-        source = envelope['source']
+        # source = envelope['source']
         # source_name = envelope['sourceName'] or source
         timestamp = datetime.fromtimestamp(envelope['timestamp'] / 1000.0)
         if timestamp <= self.__start_time:
@@ -162,7 +171,6 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
                 pass
             case {'dataMessage': _}:
                 asyncio.create_task(self.__handle_data_message(envelope))
-                pass
             case _:
                 # TODO: logging
                 pass
@@ -172,18 +180,20 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
             return
 
         message = DataMessage(envelope)
-        context: GroupContext|IndividualContext
+        context: GroupContext | IndividualContext
         if message.group_info is not None:
             context = ('group', GroupId(message.group_info['groupId']))
         else:
             context = ('individual', message.sender, envelope['sourceName'])
 
         for personality in self.__personalities:
-            if personality.matches_context(context) and await personality._personality_handle_message(self, context, message):
+            if personality.matches_context(context) and await personality.personality_handle_message(
+                    self, context, message):
                 return
-        await self._personality_handle_message(self, context, message)
+        await self.personality_handle_message(self, context, message)
 
     __WAITERS: Dict[Hashable, Callable[[ResponseFrame], bool]] = {}
+
     async def __json_rpc(self, method: str, **params) -> Future[ResponseFrame]:
         request_id = params.pop("request_id", str(uuid4()))
         if not params:
@@ -200,13 +210,16 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
         loop = asyncio.get_running_loop()
         future: Future[ResponseFrame] = loop.create_future()
         key = object()
+
         def cancel_timer():
             """Cancels our RPC after a timeout"""
             if not future.done():
                 future.set_exception(TimeoutError(f"request id {request_id!r} timed out"))
                 self.__WAITERS.pop(key, None)
+
         t_handle = loop.call_later(5.0, cancel_timer)
         self.__cancelable.append(t_handle)
+
         def check_return(ret: ResponseFrame) -> bool:
             if ret['id'] != request_id:
                 return False
@@ -220,7 +233,8 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
             t_handle.cancel()
             self.__cancelable.remove(t_handle)
             return True
+
         self.__WAITERS[key] = check_return
         self.__log.debug(request)
-        self.__cancelable.append(loop.create_task(self.__transport.write(request, self)))
+        self.__cancelable.append(loop.create_task(self.__transport.write(request)))
         return future

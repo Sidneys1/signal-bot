@@ -1,48 +1,32 @@
-# Signal-Bot
+# Welcome to Signal-Bot's documentation!
 
-An `asyncio` Python 3.11 module for building [Signal][signal] bots that interact with [AsamK/signal-cli][signal-cli].
+Signal-Bot is an `asyncio` Python 3.11 module for building [Signal][signal] bots that interact with
+[AsamK/signal-cli][signal-cli].
 
-## Features
+```{contents} Table of Contents
+:depth: 3
+```
 
-* Construct different "personalities" for different contexts (users, groups, etc).
-* Callbacks for the following events:
-  * Cron schedules.
-  * Any message is received.
-  * Message matches a prefix (e.g., `/command ...`).
-  * Message contains a keyword.
-  * Message contains an `@`-mention.
-* Currently supported signal-cli functions:
-  * "Typing..." indicators.
-  * Reacting to messages.
-  * Sending messages, including:
-    * Inline mentions.
-    * Inline text styles.
-    * *More to come...*
-  * Deleting messages.
+## Installation and Basic Usage
 
-## Usage
-
-For development: `python3.11 -m pip install signal_bot`.
+Install with Pip: `python3.11 -m pip install signal_bot`.
 
 ```py
 # test_bot.py
 import asyncio
 from signal_bot import create, Account
 
-async def crabby_callback(signal: Signal, context: Context, message: DataMessage) -> bool:
-        to = context[1]
+async def do_crabby(signal, context, message):
         await signal.send_reaction(message, "🦀")
-        await signal.send_message(to, f"Sorry, just feeling a little crabby, {message.sender_name}.",
-                                  args=SendMessageArgs(mention=[f"37:{len(message.sender_name)}:{message.sender}"]))
+        await signal.send_message(context[1], 
+            "Sorry, just feeling a little crabby.")
         return True
 
 async def main():
-    # The default, finds `signal-cli` on path and launches it as a subprocess
+    # The default, finds `signal-cli` on path and launches it
     connection = 'ipc://'
-    # or, use TCP: connection = 'tcp://HOST:PORT'
-
     signal = await create(Account('+12345678900'), connection)
-    signal.on_keyword('ok?', crabby_callback)
+    signal.on_keyword('ok?', do_crabby)
     await signal.run()
 
 if __name__ == '__main__':
@@ -68,7 +52,7 @@ Make sure to change your `test_bot.py`'s `connection` string to `tcp://signal-cl
 Additionally, an easy way to keep your Signal account from being stored in your image or `docker-compose.yml` is to
 store it in a Docker secret, as shown below.
 
-```yml
+```yaml
 secrets:
   signal-account:
     file: .signal-account
@@ -88,7 +72,7 @@ services:
     command: "'signal-cli -c /var/lib/signal-cli --account $(cat /run/secrets/signal-account) daemon --receive-mode on-connection --no-receive-stdout --send-read-receipts --tcp 0.0.0.0:7583'"
 ```
 
-## Building
+## Building From Source
 
 1. Clone this repository and install the prerequisites:
    * Python >= 3.11 with `venv` support (included with Python for Windows, `python3.11-venv` on most package managers).
@@ -104,8 +88,23 @@ services:
 Signal-Bot assumes that you already have `signal-cli` available and registered with an account from which messages will
 be sent and received.
 
+## Modules
 
-<!-- Link definitions -->
+```{toctree}
+---
+maxdepth: 2
+glob:
+---
+signal_bot.md
+signal_bot.*
+```
+
+## Indices and tables
+
+* {ref}`genindex`
+* {ref}`modindex`
+* {ref}`search`
+
 [signal]: https://www.signal.org/
 [signal-cli]: https://github.com/AsamK/signal-cli
 [cron-converter]: https://github.com/Sonic0/cron-converter
