@@ -48,7 +48,7 @@ class Personality(PersonalityProto, ABC):
         :param context: The Context in question.
         :type context: :data:`~signal_bot.aliases.Context`
         """
-        return context[1] in self._contexts
+        return len(self._contexts) == 0 or context[1] in self._contexts
 
     @abstractmethod
     def handle_callback_exception(self, exception: BaseException, cb: AnyCb) -> bool:
@@ -87,9 +87,9 @@ class Personality(PersonalityProto, ABC):
     def start_crons(self, signal: 'SignalBot'):
         """
         Start any registered Cron callbacks.
-        
+
         Called by :class:`~signal_bot.protocol.SignalBot`.
-        
+
         :param signal: The current :class:`~signal_bot.protocol.SignalBot` instance.
         """
         self._logger.debug("Starting crons...")

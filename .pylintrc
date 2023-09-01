@@ -434,6 +434,7 @@ disable=raw-checker-failed,
         import-outside-toplevel,
         unused-wildcard-import,
         too-few-public-methods,
+        bare-except,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

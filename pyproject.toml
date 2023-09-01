@@ -39,3 +39,6 @@ docs = [
 
 [tool.yapf]
 "COLUMN_LIMIT" = 120
+
+[tool.pydocstyle]
+ignore = D107
