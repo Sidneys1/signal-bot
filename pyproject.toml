@@ -3,17 +3,23 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "signal_bot"
+name = "signal_bot_framework"
 version = "0.1.0"
 authors = [
   { name="Sidneys1", email="sidneys1@proton.me" },
 ]
 description = "A Python module for building Signal.org bots that interact with signal-cli."
 readme = "README.md"
+license = {file = "LICENSE"}
 requires-python = ">=3.11"
+keywords = ["signal", "signal-cli", "bot"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Topic :: Communications :: Chat",
+    "Typing :: Typed",
 ]
 dependencies = [
   "cron-converter~=1.0.2",
@@ -34,11 +40,12 @@ docs = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/Sidneys1/signal-bot"
+Documentation = "https://signal-bot.readthedocs.io/"
+Repository = "https://github.com/Sidneys1/signal-bot"
 "Bug Tracker" = "https://github.com/Sidneys1/signal-bot/issues"
 
 [tool.yapf]
 "COLUMN_LIMIT" = 120
 
 [tool.pydocstyle]
-ignore = D107
+ignore = "D107"

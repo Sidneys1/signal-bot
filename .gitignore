@@ -4,4 +4,5 @@ signal_bot_framework/dist
 signal_bot_framework.egg-info
 docs/_*
 build/
+dist/
 *.code-workspace
