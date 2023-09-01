@@ -1,7 +1,7 @@
 *.pyc
 .signal-account
-signal_bot/dist
-signal_bot.egg-info
+signal_bot_framework/dist
+signal_bot_framework.egg-info
 docs/_*
 build/
 *.code-workspace

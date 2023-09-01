@@ -17,7 +17,7 @@ class JsonRpcHandler(Protocol):
     """
     Notified by `JsonRpcTransport` of incoming JSON RPC responses and notifications.
 
-    This abstract Protocol is implemented by :class:`~signal_bot.protocol.SignalBot`.
+    This abstract Protocol is implemented by :class:`~signal_bot_framework.protocol.SignalBot`.
     """
 
     async def handle_notification(self, notification: NotificationFrame) -> None:

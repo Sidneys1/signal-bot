@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath('../src'))
 project = 'Signal-Bot'
 copyright = '2023, Sidneys1'
 author = 'Sidneys1'
-from signal_bot.version import VERSION  # pylint: disable=wrong-import-position
+from signal_bot_framework.version import VERSION  # pylint: disable=wrong-import-position
 version = f'v{VERSION}'
 
 # -- General configuration ---------------------------------------------------

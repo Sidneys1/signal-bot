@@ -21,14 +21,14 @@ class PersonalityProto(Protocol):
     Defines a "personality" that applies only to messages in specific contexts (e.g., in a specific group).
 
     This ``Protocol`` contains shared functionality between a :class:`SignalBot` instance (a "root" personality) and
-    individual :class:`signal_bot.personality.Personality` instances. When a message is received, it is checked against
+    individual :class:`signal_bot_framework.personality.Personality` instances. When a message is received, it is checked against
     any personalities' callbacks first, then the root peronality's callbacks.
-    
-    To use, create an instance of (or subclass) :class:`~signal_bot.personality.Personality` and register it with
+
+    To use, create an instance of (or subclass) :class:`~signal_bot_framework.personality.Personality` and register it with
     :func:`SignalBot.add_personality`.
 
     Not listed here are associated ``remove_xxx(...)`` methods (e.g.,
-    :func:`~signal_bot.personality.Personality.remove_cron`).
+    :func:`~signal_bot_framework.personality.Personality.remove_cron`).
     """
 
     def matches_context(self, context: Context) -> bool:
@@ -36,34 +36,34 @@ class PersonalityProto(Protocol):
         Whether this personality matches a given context.
 
         :param context: The context to match against.
-        :type context: :data:`~signal_bot.aliases.Context`
+        :type context: :data:`~signal_bot_framework.aliases.Context`
         """
 
     def on_message(self, cb: MessageCb) -> None:
         """
         Register a callback to be called on any DataMessage.
-        
+
         :param cb: The function to call.
-        :type cb: :data:`~signal_bot.aliases.MessageCb`
+        :type cb: :data:`~signal_bot_framework.aliases.MessageCb`
         """
 
     def on_prefix(self, prefix: str, cb: MessageCb) -> None:
         """
         Register a callback to be called on any DataMessage matching a given prefix (exact match).
-        
+
         :param prefix: The exact-match prefix to trigger on.
         :param cb: The function to call.
-        :type cb: :data:`~signal_bot.aliases.MessageCb`
+        :type cb: :data:`~signal_bot_framework.aliases.MessageCb`
         """
 
     def on_cron(self, schedule: str, cb: CronCb) -> CronItem:
         """
         Register a callback to be called on a Cron schedule.
-        
+
         :param schedule: The Cron schedule to trigger on.
         :param cb: The function to call.
-        :type cb: :data:`~signal_bot.aliases.MessageCb`
-        :rtype: :data:`~signal_bot.aliases.CronItem`
+        :type cb: :data:`~signal_bot_framework.aliases.MessageCb`
+        :rtype: :data:`~signal_bot_framework.aliases.CronItem`
         """
 
     def on_mention(self, mention: Account, cb: MessageCb) -> None:
@@ -71,9 +71,9 @@ class PersonalityProto(Protocol):
         Register a callback to be called when a given Account is @-mentioned.
 
         :param mention: The Signal account to trigger on mentions of.
-        :type mention: :data:`~signal_bot.types.Account`
+        :type mention: :data:`~signal_bot_framework.types.Account`
         :param cb: The function to call.
-        :type cb: :data:`~signal_bot.aliases.MessageCb`
+        :type cb: :data:`~signal_bot_framework.aliases.MessageCb`
         """
 
     def on_keyword(self, keyword: str, cb: MessageCb, case_sensitive=False, whole_word=True) -> None:
@@ -82,7 +82,7 @@ class PersonalityProto(Protocol):
 
         :param keyword: The keyword to trigger on.
         :param cb: The function to call.
-        :type cb: :data:`~signal_bot.aliases.MessageCb`
+        :type cb: :data:`~signal_bot_framework.aliases.MessageCb`
         :param case_sensitive: Whether the match is case-sensitive.
         :type case_sensitive: :data:`bool`
         :param whole_word: Whether to match whole words only.
@@ -92,7 +92,7 @@ class PersonalityProto(Protocol):
     async def started(self, signal: 'SignalBot') -> None:
         """
         Handle when ``SignalBot`` is first started.
-        
+
         :param signal: An instance of the current ``SignalBot``.
         :type signal: :class:`~SignalBot`
         """
@@ -104,22 +104,22 @@ class PersonalityProto(Protocol):
 
         :param exception: The exception that occurred.
         :param cb: The callback that raised the exception.
-        :type cb: :data:`~signal_bot.aliases.AnyCb`
+        :type cb: :data:`~signal_bot_framework.aliases.AnyCb`
         :returns: Whether Cron callbacks should be rescheduled.
         """
 
 
 class SignalBot(PersonalityProto, Protocol):
     """
-    The high-level abstraction of ``signal_bot`` functionality.
+    The high-level abstraction of ``signal_bot_framework`` functionality.
 
-    Implementation can be found in ``signal_bot._signal_impl``.
-    To create an instance, call :meth:`signal_bot.create`.
+    Implementation can be found in ``signal_bot_framework._signal_impl``.
+    To create an instance, call :meth:`signal_bot_framework.create`.
     """
 
     def __init__(self) -> None:  # noqa: D107
         # TODO: remove this limitation in future versions.
-        raise TypeError("Instances must be created with `signal_bot.create(...)`.")
+        raise TypeError("Instances must be created with `signal_bot_framework.create(...)`.")
 
     @property
     def account(self) -> Account:
@@ -167,7 +167,7 @@ class SignalBot(PersonalityProto, Protocol):
     async def run(self) -> None:
         """
         Start Cron callbacks and the message pump loop.
-        
+
         Runs until the transport raises ``asyncio.CancelledError`` (e.g., :meth:`stop` is called).
         """
 
@@ -177,6 +177,6 @@ class SignalBot(PersonalityProto, Protocol):
     def add_personality(self, personality: PersonalityProto) -> None:
         """
         Add a sub-personality.
-        
-        :param personality: The :class:`~signal_bot.personality.Personality` to add.
+
+        :param personality: The :class:`~signal_bot_framework.personality.Personality` to add.
         """

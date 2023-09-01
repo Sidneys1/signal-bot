@@ -1,4 +1,4 @@
-"""Constants used internally to `signal_bot`."""
+"""Constants used internally to `signal_bot_framework`."""
 
 SIGNAL_ARGS = ['--ignore-attachments', '--ignore-stories', '--send-read-receipts']
 """Default arguments passed to `signal-cli` when running in `ipc:` mode."""

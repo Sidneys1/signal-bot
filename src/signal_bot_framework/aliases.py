@@ -32,8 +32,8 @@ CronItem: TypeAlias = Tuple[str, CronCb]
 """
 A cron item definition.
 
-Used for :meth:`~signal_bot.personality.Personality.remove_cron` or to identify the callback that triggered an
-exception in :meth:`~signal_bot.personality.Personality.handle_callback_exception`.
+Used for :meth:`~signal_bot_framework.personality.Personality.remove_cron` or to identify the callback that triggered an
+exception in :meth:`~signal_bot_framework.personality.Personality.handle_callback_exception`.
 """
 
 MessageHookDef: TypeAlias = Tuple[Literal['message'], MessageCb]

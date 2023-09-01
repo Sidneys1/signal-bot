@@ -9,12 +9,12 @@ Signal-Bot is an `asyncio` Python 3.11 module for building [Signal][signal] bots
 
 ## Installation and Basic Usage
 
-Install with Pip: `python3.11 -m pip install signal_bot`.
+Install with Pip: `python3.11 -m pip install _framework`.
 
 ```py
 # test_bot.py
 import asyncio
-from signal_bot import create, Account
+from signal_bot_framework import create, Account
 
 async def do_crabby(signal, context, message):
         await signal.send_reaction(message, "🦀")
@@ -78,7 +78,7 @@ services:
    * Python >= 3.11 with `venv` support (included with Python for Windows, `python3.11-venv` on most package managers).
    * `python3.11 -m pip install build`
 2. Run `python3.11 -m build` in the repository folder.
-3. Distribute or install `./dist/signal_bot-X.Y.Z-py3-none-any.whl`.
+3. Distribute or install `./dist/signal_bot_framework-X.Y.Z-py3-none-any.whl`.
 
 ### Dependencies
 
@@ -95,8 +95,8 @@ be sent and received.
 maxdepth: 2
 glob:
 ---
-signal_bot.md
-signal_bot.*
+signal_bot_framework.md
+signal_bot_framework.*
 ```
 
 ## Indices and tables

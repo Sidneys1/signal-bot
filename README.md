@@ -22,12 +22,12 @@ An `asyncio` Python 3.11 module for building [Signal][signal] bots that interact
 
 ## Usage
 
-For development: `python3.11 -m pip install signal_bot`.
+For development: `python3.11 -m pip install signal_bot_framework`.
 
 ```py
 # test_bot.py
 import asyncio
-from signal_bot import create, Account
+from signal_bot_framework import create, Account
 
 async def crabby_callback(signal: Signal, context: Context, message: DataMessage) -> bool:
         to = context[1]
@@ -94,7 +94,7 @@ services:
    * Python >= 3.11 with `venv` support (included with Python for Windows, `python3.11-venv` on most package managers).
    * `python3.11 -m pip install build`
 2. Run `python3.11 -m build` in the repository folder.
-3. Distribute or install `./dist/signal_bot-X.Y.Z-py3-none-any.whl`.
+3. Distribute or install `./dist/signal_bot_framework-X.Y.Z-py3-none-any.whl`.
 
 ### Dependencies
 
