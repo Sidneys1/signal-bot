@@ -152,17 +152,14 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
     #############
 
     async def __receive(self, message: NotificationFrame) -> None:
-        # TODO: logging
         envelope: EnvelopeFrame = message['params'].get('envelope', None)
         if envelope is None:
-            # TODO: logging
+            self.__log.warning("Received NotificationFrame with null Envelope: %r", message)
             return
 
-        # source = envelope['source']
-        # source_name = envelope['sourceName'] or source
         timestamp = datetime.fromtimestamp(envelope['timestamp'] / 1000.0)
         if timestamp <= self.__start_time:
-            # TODO: catchup mode?
+            self.__log.warning("Received message from before signal_bot_framework started (%r).", timestamp)
             return
 
         match envelope:
@@ -172,13 +169,9 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
             case {'dataMessage': _}:
                 asyncio.create_task(self.__handle_data_message(envelope))
             case _:
-                # TODO: logging
-                pass
+                self.__log.warning("Unknown message type: %r", set(envelope.keys()))
 
     async def __handle_data_message(self, envelope: EnvelopeFrame) -> None:
-        if envelope['dataMessage']['message'] is None:
-            return
-
         message = DataMessage(envelope)
         context: GroupContext | IndividualContext
         if message.group_info is not None:
