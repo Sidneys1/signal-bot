@@ -9,12 +9,12 @@ Signal-Bot is an `asyncio` Python 3.11 module for building [Signal][signal] bots
 
 ## Installation and Basic Usage
 
-Install with Pip: `python3.11 -m pip install _framework`.
+Install with Pip: `python3.11 -m pip install signal_bot_framework`.
 
 ```py
 # test_bot.py
 import asyncio
-from signal_bot_framework import create, Account
+from signal_bot_framework import create, AccountNumber
 
 async def do_crabby(signal, context, message):
         await signal.send_reaction(message, "🦀")
@@ -25,7 +25,7 @@ async def do_crabby(signal, context, message):
 async def main():
     # The default, finds `signal-cli` on path and launches it
     connection = 'ipc://'
-    signal = await create(Account('+12345678900'), connection)
+    signal = await create(AccountNumber('+12345678900'), connection)
     signal.on_keyword('ok?', do_crabby)
     await signal.run()
 

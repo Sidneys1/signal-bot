@@ -7,7 +7,7 @@ from abc import abstractmethod
 from datetime import datetime
 
 from .args import SendMessageArgs
-from .types import AccountNumber, GroupId, DataMessage
+from .types import AccountNumber, AccountUUID, GroupId, DataMessage
 from .aliases import Context, MessageCb, CronCb, CronItem, AnyCb, RpcRet
 
 ########################
@@ -66,12 +66,12 @@ class PersonalityProto(Protocol):
         :rtype: :data:`~signal_bot_framework.aliases.CronItem`
         """
 
-    def on_mention(self, mention: AccountNumber, cb: MessageCb) -> None:
+    def on_mention(self, mention: AccountNumber | AccountUUID, cb: MessageCb) -> None:
         """
-        Register a callback to be called when a given Account is @-mentioned.
+        Register a callback to be called when a given :data:`~signal_bot_framework.types.AccountNumber`/:data:`~signal_bot_framework.types.AccountUUID` is @-mentioned.
 
         :param mention: The Signal account to trigger on mentions of.
-        :type mention: :data:`~signal_bot_framework.types.Account`
+        :type mention: Union[:data:`~signal_bot_framework.types.AccountNumber`, :data:`~signal_bot_framework.types.AccountUUID`]
         :param cb: The function to call.
         :type cb: :data:`~signal_bot_framework.aliases.MessageCb`
         """
@@ -133,34 +133,37 @@ class SignalBot(PersonalityProto, Protocol):
         :param emoji: The emoji to react with.
         """
 
-    async def send_typing(self, to: AccountNumber | GroupId, stop=False) -> RpcRet:
+    async def send_typing(self, to: AccountNumber | AccountUUID | GroupId, stop=False) -> RpcRet:
         """
         Start (or stop) the "Typing..." indicator.
 
         When started, will display for 15 seconds unless stopped.
 
         :param to: The destination of the typing indicator (an individual or a group).
+        :type to: Union[:data:`~signal_bot_framework.types.AccountNumber`, :data:`~signal_bot_framework.types.AccountUUID`, :data:`~signal_bot_framework.types.GroupID`]
         :param stop: Stop (rather than start) the typing indicator.
         :type stop: :data:`bool`
         """
 
     async def send_message(self,
-                           to: AccountNumber | GroupId,
+                           to: AccountNumber | AccountUUID | GroupId,
                            message: str | None = None,
                            args: SendMessageArgs | None = None) -> RpcRet:
         """
         Send a message.
 
         :param to: The destination of the message (an individual or a group).
+        :type to: Union[:data:`~signal_bot_framework.types.AccountNumber`, :data:`~signal_bot_framework.types.AccountUUID`, :data:`~signal_bot_framework.types.GroupID`]
         :param message: The textual message to send (if any).
         :param args: Additional arguments to ``send_message``.
         """
 
-    async def delete_message(self, to: AccountNumber | GroupId, target_timestamp: datetime) -> RpcRet:
+    async def delete_message(self, to: AccountNumber | AccountUUID | GroupId, target_timestamp: datetime) -> RpcRet:
         """
         Delete a sent message (by timestamp).
 
         :param to: The destination (an individual or a group) in which to delete a message.
+        :type to: Union[:data:`~signal_bot_framework.types.AccountNumber`, :data:`~signal_bot_framework.types.AccountUUID`, :data:`~signal_bot_framework.types.GroupID`]
         :param target_timestamp: The timestamp of the message to delete.
         """
 

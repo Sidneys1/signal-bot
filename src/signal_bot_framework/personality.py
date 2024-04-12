@@ -13,7 +13,7 @@ import humanize
 from cron_converter import Cron
 from cron_converter.sub_modules.seeker import Seeker
 
-from .types import AccountNumber, DataMessage
+from .types import AccountNumber, AccountUUID, DataMessage
 from .protocol import PersonalityProto, MessageCb, CronItem, GroupId, Context, AnyCb, SignalBot, CronCb
 
 
@@ -24,13 +24,13 @@ class Personality(PersonalityProto, ABC):
     _prefix_hooks: dict[str, MessageCb]
     _keyword_hooks: dict[Tuple[str, bool, bool], MessageCb]
     _keyword_cache: dict[Tuple[str, bool, bool], re.Pattern]
-    _mention_hooks: dict[AccountNumber, MessageCb]
+    _mention_hooks: dict[AccountNumber|AccountUUID, MessageCb]
     _cron_hooks: list[CronItem]
     _crons: list[asyncio.TimerHandle]
-    _contexts: Sequence[AccountNumber | GroupId]
+    _contexts: Sequence[AccountNumber | AccountUUID | GroupId]
     _logger: Logger
 
-    def __init__(self, contexts: Sequence[AccountNumber | GroupId] = tuple()):  # noqa: D107
+    def __init__(self, contexts: Sequence[AccountNumber | AccountUUID | GroupId] = tuple()):  # noqa: D107
         self._message_hooks = []
         self._prefix_hooks = {}
         self._keyword_hooks = {}
@@ -183,11 +183,11 @@ class Personality(PersonalityProto, ABC):
                 self._keyword_cache.pop(elem, None)
                 return
 
-    def on_mention(self, mention: AccountNumber, cb: MessageCb):
+    def on_mention(self, mention: AccountNumber | AccountUUID, cb: MessageCb):
         self._mention_hooks[mention] = cb
 
     # pylint: disable=missing-function-docstring
-    def remove_mention(self, mention: AccountNumber):
+    def remove_mention(self, mention: AccountNumber | AccountUUID):
         self._mention_hooks.pop(mention, None)
 
     def on_cron(self, schedule: str, cb: CronCb) -> CronItem:

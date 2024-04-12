@@ -27,7 +27,7 @@ For development: `python3.11 -m pip install signal_bot_framework`.
 ```py
 # test_bot.py
 import asyncio
-from signal_bot_framework import create, Account
+from signal_bot_framework import create, AccountNumber
 
 async def crabby_callback(signal: Signal, context: Context, message: DataMessage) -> bool:
         to = context[1]
@@ -41,7 +41,7 @@ async def main():
     connection = 'ipc://'
     # or, use TCP: connection = 'tcp://HOST:PORT'
 
-    signal = await create(Account('+12345678900'), connection)
+    signal = await create(AccountNumber('+12345678900'), connection)
     signal.on_keyword('ok?', crabby_callback)
     await signal.run()
 

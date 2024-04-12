@@ -126,7 +126,6 @@ class MentionFrame(TypedDict):
     start: int
     length: int
 
-
 class DataMessage:
     """A realized DataMessage."""
 
@@ -137,7 +136,7 @@ class DataMessage:
     """The parsed time at which this message was sent."""
 
     unix_timestamp: int
-    sender: AccountNumber|AccountUUID|None
+    sender: AccountNumber | AccountUUID | None
     sender_name: str
     sender_uuid: AccountUUID
     expires_in: timedelta

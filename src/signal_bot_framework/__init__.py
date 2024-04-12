@@ -27,7 +27,7 @@ async def create(account: AccountNumber, connection: str = 'ipc://') -> SignalBo
     Create an instance of `SignalBot`.
 
     :param account: The Signal account to use (e.g., `"+12345678901"`).
-    :type account: :data:`~signal_bot_framework.types.Account`
+    :type account: :data:`~signal_bot_framework.types.AccountNumber`
 
     :param connection: The connection string used to communicate with `signal-cli`. See classes in
                        :mod:`signal_bot_framework.transport` for supported forms.

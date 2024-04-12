@@ -23,7 +23,7 @@ version = f'v{VERSION}'
 extensions = ['sphinx.ext.autodoc', "sphinx_autodoc_typehints", 'sphinx_paramlinks', "myst_parser"]
 
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'BUILDING.md']
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
