@@ -29,7 +29,10 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pylint~=2.17.5",
-  "yapf~=0.40.1"
+  "yapf~=0.40.1",
+  "wheel",
+  "build",
+  "twine"
 ]
 
 docs = [
