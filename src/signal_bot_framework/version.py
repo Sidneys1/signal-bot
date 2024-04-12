@@ -1,6 +1,6 @@
 """Signal-Bot Version"""
 
-VERSION_TUPLE = (0, 2, 0)
+VERSION_TUPLE = (0, 2, 2)
 VERSION = '.'.join(map(str, VERSION_TUPLE))
 __version__ = VERSION
 
