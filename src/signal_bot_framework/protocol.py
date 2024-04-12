@@ -7,7 +7,7 @@ from abc import abstractmethod
 from datetime import datetime
 
 from .args import SendMessageArgs
-from .types import Account, GroupId, DataMessage
+from .types import AccountNumber, GroupId, DataMessage
 from .aliases import Context, MessageCb, CronCb, CronItem, AnyCb, RpcRet
 
 ########################
@@ -66,7 +66,7 @@ class PersonalityProto(Protocol):
         :rtype: :data:`~signal_bot_framework.aliases.CronItem`
         """
 
-    def on_mention(self, mention: Account, cb: MessageCb) -> None:
+    def on_mention(self, mention: AccountNumber, cb: MessageCb) -> None:
         """
         Register a callback to be called when a given Account is @-mentioned.
 
@@ -122,7 +122,7 @@ class SignalBot(PersonalityProto, Protocol):
         raise TypeError("Instances must be created with `signal_bot_framework.create(...)`.")
 
     @property
-    def account(self) -> Account:
+    def account_number(self) -> AccountNumber:
         """The currently registered Signal account."""
 
     async def send_reaction(self, to: DataMessage, emoji: str) -> RpcRet:
@@ -133,7 +133,7 @@ class SignalBot(PersonalityProto, Protocol):
         :param emoji: The emoji to react with.
         """
 
-    async def send_typing(self, to: Account | GroupId, stop=False) -> RpcRet:
+    async def send_typing(self, to: AccountNumber | GroupId, stop=False) -> RpcRet:
         """
         Start (or stop) the "Typing..." indicator.
 
@@ -145,7 +145,7 @@ class SignalBot(PersonalityProto, Protocol):
         """
 
     async def send_message(self,
-                           to: Account | GroupId,
+                           to: AccountNumber | GroupId,
                            message: str | None = None,
                            args: SendMessageArgs | None = None) -> RpcRet:
         """
@@ -156,7 +156,7 @@ class SignalBot(PersonalityProto, Protocol):
         :param args: Additional arguments to ``send_message``.
         """
 
-    async def delete_message(self, to: Account | GroupId, target_timestamp: datetime) -> RpcRet:
+    async def delete_message(self, to: AccountNumber | GroupId, target_timestamp: datetime) -> RpcRet:
         """
         Delete a sent message (by timestamp).
 

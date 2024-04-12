@@ -8,7 +8,7 @@ from datetime import datetime
 from inspect import isawaitable
 from typing import Dict, Hashable, Callable, cast
 
-from .types import Account, DataMessage, Response, GroupId, ResponseFrame, NotificationFrame, EnvelopeFrame
+from .types import AccountNumber, AccountUUID, DataMessage, Response, GroupId, ResponseFrame, NotificationFrame, EnvelopeFrame
 from .aliases import GroupContext, AnyCb, IndividualContext
 from .args import SendMessageArgs
 from .exceptions import SignalRpcException
@@ -20,7 +20,7 @@ from .transport import JsonRpcTransport, JsonRpcHandler
 class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
     """Concrete implementation of `SignalBot`."""
 
-    __account: Account
+    __account_number: AccountNumber
     __transport: JsonRpcTransport
     __log: Logger = getLogger(__module__ + '.Signal')  # type: ignore
     __start_time: datetime
@@ -28,8 +28,8 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
     __stopping = asyncio.Event()
     __cancelable: list[asyncio.Task | asyncio.Handle]
 
-    def __init__(self, account: Account, transport: JsonRpcTransport) -> None:
-        self.__account = account
+    def __init__(self, account_number: AccountNumber, transport: JsonRpcTransport) -> None:
+        self.__account_number = account_number
         self.__transport = transport
         self.__start_time = datetime.now()
         self.__personalities = []
@@ -39,8 +39,8 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
     # `Signal`
 
     @property
-    def account(self) -> Account:
-        return self.__account
+    def account_number(self) -> AccountNumber:
+        return self.__account_number
 
     async def run(self) -> None:
         self.start_crons(self)
@@ -80,25 +80,25 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
     async def send_reaction(self, to: DataMessage, emoji: str) -> Future[Response]:
         kwargs = {}
         if to.group_info is None:
-            kwargs['recipient'] = to.sender
+            kwargs['recipient'] = to.sender_uuid
         else:
             kwargs['groupId'] = to.group_info['groupId']  # type: ignore
 
         return asyncio.ensure_future(
             Response.from_future_frame(await self.__json_rpc('sendReaction',
                                                              emoji=emoji,
-                                                             targetAuthor=to.sender,
+                                                             targetAuthor=to.sender_uuid,
                                                              targetTimestamp=to.unix_timestamp,
                                                              **kwargs)))
 
-    async def send_typing(self, to: Account | GroupId, stop=False) -> Future[Response]:
+    async def send_typing(self, to: AccountNumber | AccountUUID | GroupId, stop=False) -> Future[Response]:
         kwargs: dict = {('groupId' if len(to) == 44 else 'recipient'): to}
         if stop:
             kwargs['stop'] = True
         return asyncio.ensure_future(Response.from_future_frame(await self.__json_rpc('sendTyping', **kwargs)))
 
     async def send_message(self,
-                           to: Account | GroupId,
+                           to: AccountNumber | AccountUUID | GroupId,
                            message: str | None = None,
                            args: SendMessageArgs | None = None) -> Future[Response]:
         if (not message) and args is not None and not args.attachment:
@@ -109,7 +109,7 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
         return asyncio.ensure_future(
             Response.from_future_frame(await self.__json_rpc('send', message=message, **kwargs)))
 
-    async def delete_message(self, to: Account | GroupId, target_timestamp: datetime) -> RpcRet:
+    async def delete_message(self, to: AccountNumber | AccountUUID | GroupId, target_timestamp: datetime) -> RpcRet:
         kwargs: dict = {
             ('groupId' if len(to) == 44 else 'recipient'): to,
             'targetTimestamp': int(target_timestamp.timestamp() * 1000)
@@ -192,7 +192,7 @@ class SignalBotImpl(SignalBot, Personality, JsonRpcHandler):
         if not params:
             params = {}
 
-        params.update({"account": self.__account})
+        params.update({"account": self.__account_number})
         request: NotificationFrame = {
             'jsonrpc': '2.0',
             'id': request_id,

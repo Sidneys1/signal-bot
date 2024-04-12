@@ -8,8 +8,11 @@ from datetime import datetime, timedelta
 
 from ._util import to_lower_camel_case
 
-Account = NewType('Account', str)
-"""A Signal account. Actually a :data:`str` of a phone number with a ``+`` and country code."""
+AccountNumber = NewType('AccountNumber', str)
+"""A Signal account phone number with a ``+`` and country code. Actually a :data:`str`."""
+
+AccountUUID = NewType('AccountUUID', str)
+"""A Signal account UUID. Actually a :data:`str`."""
 
 GroupId = NewType('GroupId', str)
 """A Signal group ID. Actually a :data:`str` of a base-64 encoded identifier."""
@@ -100,8 +103,8 @@ class EnvelopeFrame(TypedDict):
     """Raw signal-cli Envelope frame (type hint only, will be raw `dict` at runtime)."""
 
     source: str
-    sourceNumber: str
-    sourceUuid: str
+    sourceNumber: AccountNumber|None
+    sourceUuid: AccountUUID
     sourceName: str
     sourceDevice: int
     timestamp: int
@@ -118,8 +121,8 @@ class MentionFrame(TypedDict):
     """An @mention in a DataMessage."""
 
     name: str
-    number: str
-    uuid: str
+    number: AccountNumber|None
+    uuid: AccountUUID
     start: int
     length: int
 
@@ -134,9 +137,9 @@ class DataMessage:
     """The parsed time at which this message was sent."""
 
     unix_timestamp: int
-    sender: Account
+    sender: AccountNumber|AccountUUID|None
     sender_name: str
-    sender_uuid: str
+    sender_uuid: AccountUUID
     expires_in: timedelta
 
     message: str | None
@@ -159,9 +162,9 @@ class DataMessage:
         assert 'dataMessage' in frame
         self.timestamp = datetime.fromtimestamp(frame['dataMessage']['timestamp'] / 1000.0)
         self.unix_timestamp = frame['dataMessage']['timestamp']
-        self.sender = Account(frame['sourceNumber'])
+        self.sender = AccountNumber(frame['sourceNumber']) if frame['sourceNumber'] is not None else AccountUUID(frame['sourceUuid'])
         self.sender_name = frame['sourceName']
-        self.sender_uuid = frame['sourceUuid']
+        self.sender_uuid = AccountUUID(frame['sourceUuid'])
         self.expires_in = timedelta(seconds=frame['dataMessage']['expiresInSeconds'])
         for name in self.__annotations__:  # pylint: disable=no-member
             if name.startswith('_') or getattr(

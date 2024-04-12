@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TypeAlias, Tuple, Literal, Callable, Awaitable, TYPE_CHECKING
 from asyncio import Future
 
-from .types import Response, GroupId, Account, DataMessage
+from .types import Response, GroupId, AccountNumber, DataMessage
 
 RpcRet: TypeAlias = Future[Response]
 """Future values returned from JSON-RPC operations."""
@@ -14,7 +14,7 @@ Name: TypeAlias = str
 """An individual Signal account's display name."""
 
 GroupContext: TypeAlias = Tuple[Literal['group'], GroupId]
-IndividualContext: TypeAlias = Tuple[Literal['individual'], Account, Name]
+IndividualContext: TypeAlias = Tuple[Literal['individual'], AccountNumber, Name]
 Context: TypeAlias = GroupContext | IndividualContext
 """
 Used to identify the context in which a message was received.
@@ -39,7 +39,7 @@ exception in :meth:`~signal_bot_framework.personality.Personality.handle_callbac
 MessageHookDef: TypeAlias = Tuple[Literal['message'], MessageCb]
 PrefixHookDef: TypeAlias = Tuple[Literal['prefix'], str, MessageCb]
 KeywordHookDef: TypeAlias = Tuple[Literal['keyword'], Tuple[str, bool], MessageCb]
-MentionHookDef: TypeAlias = Tuple[Literal['account'], Account, MessageCb]
+MentionHookDef: TypeAlias = Tuple[Literal['account'], AccountNumber, MessageCb]
 CronHookDef: TypeAlias = Tuple[Literal['cron'], str, CronCb]
 AnyCb: TypeAlias = MessageHookDef | PrefixHookDef | KeywordHookDef | MentionHookDef | CronHookDef
 """Any callback definition."""

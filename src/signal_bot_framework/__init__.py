@@ -9,7 +9,7 @@ Looking for high-level interfaces? Check out :mod:`signal_bot_framework.protocol
 from urllib.parse import urlparse
 
 from .version import __version__
-from .types import Account
+from .types import AccountNumber
 from .protocol import SignalBot
 from .transport import JsonRpcTransport
 
@@ -22,7 +22,7 @@ from .transport import JsonRpcTransport
 #################################################################
 # Looking for high-level interfaces? Check out `./protocol.py`. #
 #################################################################
-async def create(account: Account, connection: str = 'ipc://') -> SignalBot:
+async def create(account: AccountNumber, connection: str = 'ipc://') -> SignalBot:
     """
     Create an instance of `SignalBot`.
 
