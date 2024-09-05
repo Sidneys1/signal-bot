@@ -88,6 +88,16 @@ services:
 Signal-Bot assumes that you already have `signal-cli` available and registered with an account from which messages will
 be sent and received.
 
+## Examples
+
+```{toctree}
+---
+maxdepth: 2
+glob:
+---
+examples.md
+```
+
 ## Modules
 
 ```{toctree}
