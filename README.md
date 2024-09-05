@@ -1,6 +1,21 @@
+<div align="center">
+
 # Signal-Bot
 
-An `asyncio` Python 3.11 module for building [Signal][signal] bots that interact with [AsamK/signal-cli][signal-cli].
+An `asyncio` Python 3.11 module for building [Signal][signal] bots that interact with [AsamK/signal-cli][signal-cli].<br>
+[**📖 Documentation and Examples**](https://signal-bot.readthedocs.io/)
+
+[![Build and Publish Releases](https://github.com/Sidneys1/signal-bot/actions/workflows/python-publish.yml/badge.svg)](https://github.com/Sidneys1/signal-bot/actions/workflows/python-publish.yml)
+[![PyPI - Version](https://img.shields.io/pypi/v/signal-bot-framework?logo=pypi&label=Python%20Package)](https://pypi.org/project/signal-bot-framework/)
+[![Read the Docs](https://img.shields.io/readthedocs/signal-bot?logo=readthedocs&label=Read%20the%20Docs)](https://signal-bot.readthedocs.io/)
+
+</div>
+
+- [Features](#features)
+- [Usage](#usage)
+  - [Docker](#docker)
+- [Building](#building)
+  - [Dependencies](#dependencies)
 
 ## Features
 
