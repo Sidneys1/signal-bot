@@ -4,7 +4,7 @@ Examples will use this general format, and some of this boilerpate may be omitte
 functions, or lines of code may be shown in individual examples.
 
 ```py
-import asycio
+import asyncio
 
 from signal_bot_framework import create, AccountNumber, SignalBot
 from signal_bot_framework.aliases import Context, DataMessage
